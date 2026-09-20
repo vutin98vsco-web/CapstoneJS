@@ -4,7 +4,8 @@ import { defaultStores } from "../data.js";
 import { createId, readStorage, writeStorage } from "../utils/storage.js";
 
 const STORAGE_KEY = "tinStudioStores";
-const API_URL = import.meta.env.VITE_STORE_API_URL?.trim();
+const DEFAULT_API_URL = "https://6aaa8e62ff4dd5698b4eb2bb.mockapi.io/Stores";
+const API_URL = import.meta.env.VITE_STORE_API_URL?.trim() || DEFAULT_API_URL;
 
 function localStores() {
   const stores = readStorage(STORAGE_KEY, defaultStores);
