@@ -7,23 +7,49 @@ import { storeService } from "../js/services/storeService.js";
 import { validateProduct, validateStore } from "../js/utils/validation.js";
 import { formatCurrency } from "../js/utils/format.js";
 
-const emptyProduct = { name: "", category: "", price: "", oldPrice: "", stock: "", image: "", screen: "", camera: "", chip: "", storage: "", badge: "", description: "" };
+const emptyProduct = { name: "", category: "", price: "", oldPrice: "", stock: "", image: "", images: [], screen: "", camera: "", frontCamera: "", chip: "", storage: "", badge: "", description: "", variants: [], colors: [], details: {} };
 const emptyStore = { name: "", address: "", hours: "", phone: "" };
 
 function AdminForm({ modal, onClose, onSaved }) {
   const isProduct = modal.type === "product";
-  const [data, setData] = useState(() => isProduct ? { ...emptyProduct, ...modal.item } : { ...emptyStore, ...modal.item });
+  const [data, setData] = useState(() => {
+    if (!isProduct) return { ...emptyStore, ...modal.item };
+    const item = { ...emptyProduct, ...modal.item };
+    return {
+      ...item,
+      images: (item.images || []).filter(Boolean),
+      variants: (item.variants || []).map((variant) => ({ ...variant })),
+      colors: (item.colors || []).map((color) => ({ ...color })),
+      detailRows: Object.entries(item.details || {}).map(([label, value]) => ({ label, value })),
+    };
+  });
   const [errors, setErrors] = useState({});
   function change(event) { setData({ ...data, [event.target.name]: event.target.value }); }
+  function updateList(list, index, field, value) {
+    setData((current) => ({ ...current, [list]: current[list].map((item, itemIndex) => itemIndex === index ? { ...item, [field]: value } : item) }));
+  }
+  function addListItem(list, item) { setData((current) => ({ ...current, [list]: [...current[list], item] })); }
+  function removeListItem(list, index) { setData((current) => ({ ...current, [list]: current[list].filter((_, itemIndex) => itemIndex !== index) })); }
+  function updateImage(index, value) { setData((current) => ({ ...current, images: current.images.map((image, imageIndex) => imageIndex === index ? value : image) })); }
+  function addImage() { setData((current) => ({ ...current, images: [...current.images, ""] })); }
+  function removeImage(index) { setData((current) => ({ ...current, images: current.images.filter((_, imageIndex) => imageIndex !== index) })); }
   async function submit(event) {
     event.preventDefault();
-    const validation = isProduct ? validateProduct(data) : validateStore(data);
+    const normalizedImages = isProduct ? [data.image, ...data.images, ...data.colors.map((color) => color.image)].map((item) => item?.trim()).filter((item, index, list) => item && list.indexOf(item) === index) : [];
+    const normalizedData = isProduct ? {
+      ...data,
+      images: normalizedImages,
+      variants: data.variants.map((variant) => ({ storage: variant.storage.trim(), price: Number(variant.price) })).filter((variant) => variant.storage),
+      colors: data.colors.map((color) => ({ name: color.name.trim(), hex: color.hex || "#d8d9dc", image: color.image.trim() })).filter((color) => color.name),
+      details: Object.fromEntries(data.detailRows.map((detail) => [detail.label.trim(), String(detail.value).trim()]).filter(([label]) => label)),
+    } : data;
+    const validation = isProduct ? validateProduct(normalizedData) : validateStore(normalizedData);
     if (Object.keys(validation).length) return setErrors(validation);
     try {
       if (isProduct) {
-        const payload = { ...data, price: Number(data.price), oldPrice: Number(data.oldPrice || 0), stock: Number(data.stock), images: data.images?.length ? data.images : [data.image], variants: data.variants || [], colors: data.colors || [], details: data.details || {} };
+        const payload = { ...normalizedData, price: Number(data.price), oldPrice: Number(data.oldPrice || 0), stock: Number(data.stock) };
         if (modal.item?.id) await productService.update(modal.item.id, payload); else await productService.create(payload);
-      } else if (modal.item?.id) await storeService.update(modal.item.id, data); else await storeService.create(data);
+      } else if (modal.item?.id) await storeService.update(modal.item.id, normalizedData); else await storeService.create(normalizedData);
       onSaved();
     } catch { setErrors({ api: "Không thể lưu dữ liệu. Vui lòng thử lại." }); }
   }
@@ -33,13 +59,41 @@ function AdminForm({ modal, onClose, onSaved }) {
         <button className="close-button" type="button" onClick={onClose} aria-label="Đóng">×</button>
         <h2>{modal.item?.id ? "Cập nhật" : "Thêm"} {isProduct ? "sản phẩm" : "chi nhánh"}</h2>
         <form onSubmit={submit} noValidate>
-          {isProduct ? <div className="form-grid"><label className="span-2">Tên sản phẩm<input name="name" value={data.name} onChange={change} /></label><label>Loại<select name="category" value={data.category} onChange={change}><option value="">Chọn loại</option><option>iPhone</option><option>Samsung</option></select></label><label>Giá bán<input name="price" type="number" min="0" value={data.price} onChange={change} /></label><label>Giá cũ<input name="oldPrice" type="number" min="0" value={data.oldPrice} onChange={change} /></label><label>Tồn kho<input name="stock" type="number" min="0" step="1" value={data.stock ?? ""} onChange={change} /></label><label className="span-2">Đường dẫn ảnh<input name="image" value={data.image} onChange={change} /></label><label>Màn hình<input name="screen" value={data.screen} onChange={change} /></label><label>Camera<input name="camera" value={data.camera} onChange={change} /></label><label>Chip<input name="chip" value={data.chip} onChange={change} /></label><label>Bộ nhớ<input name="storage" value={data.storage} onChange={change} /></label><label className="span-2">Nhãn nổi bật<input name="badge" value={data.badge} onChange={change} /></label><label className="span-2">Mô tả<textarea name="description" rows="3" value={data.description} onChange={change} /></label></div> : <div className="form-grid"><label className="span-2">Tên chi nhánh<input name="name" value={data.name} onChange={change} /></label><label className="span-2">Địa chỉ<input name="address" value={data.address} onChange={change} /></label><label>Giờ mở cửa<input name="hours" value={data.hours} onChange={change} /></label><label>Số điện thoại<input name="phone" value={data.phone} onChange={change} /></label></div>}
+          {isProduct ? <>
+            <section className="admin-form-section"><h3>Thông tin cơ bản</h3><div className="form-grid"><label className="span-2">Tên sản phẩm<input name="name" value={data.name} onChange={change} /></label><label>Loại<select name="category" value={data.category} onChange={change}><option value="">Chọn loại</option><option>iPhone</option><option>Samsung</option></select></label><label>Giá bán mặc định<input name="price" type="number" min="0" value={data.price} onChange={change} /></label><label>Giá cũ<input name="oldPrice" type="number" min="0" value={data.oldPrice} onChange={change} /></label><label>Tồn kho<input name="stock" type="number" min="0" step="1" value={data.stock ?? ""} onChange={change} /></label><label className="span-2">Ảnh đại diện<input name="image" value={data.image} onChange={change} placeholder="https://... hoặc /products/..." /></label><label>Nhãn nổi bật<input name="badge" value={data.badge} onChange={change} /></label><label>Bộ nhớ mô tả<input name="storage" value={data.storage} onChange={change} /></label><label className="span-2">Mô tả<textarea name="description" rows="3" value={data.description} onChange={change} /></label></div></section>
+
+            <DynamicSection title="Dung lượng và giá" onAdd={() => addListItem("variants", { storage: "", price: "" })} addLabel="Thêm dung lượng">
+              {data.variants.map((variant, index) => <div className="dynamic-row variant-row" key={`variant-${index}`}><input aria-label={`Dung lượng ${index + 1}`} placeholder="256GB" value={variant.storage} onChange={(event) => updateList("variants", index, "storage", event.target.value)} /><input aria-label={`Giá dung lượng ${index + 1}`} placeholder="Giá bán" type="number" min="0" value={variant.price} onChange={(event) => updateList("variants", index, "price", event.target.value)} /><RemoveButton onClick={() => removeListItem("variants", index)} /></div>)}
+            </DynamicSection>
+
+            <DynamicSection title="Màu sắc và ảnh tương ứng" onAdd={() => addListItem("colors", { name: "", hex: "#d8d9dc", image: "" })} addLabel="Thêm màu">
+              {data.colors.map((color, index) => <div className="dynamic-row color-row" key={`color-${index}`}><input aria-label={`Tên màu ${index + 1}`} placeholder="Tên màu" value={color.name} onChange={(event) => updateList("colors", index, "name", event.target.value)} /><input className="color-picker" aria-label={`Mã màu ${index + 1}`} type="color" value={/^#[0-9a-f]{6}$/i.test(color.hex) ? color.hex : "#d8d9dc"} onChange={(event) => updateList("colors", index, "hex", event.target.value)} /><input aria-label={`Ảnh màu ${index + 1}`} placeholder="Ảnh của màu này" value={color.image} onChange={(event) => updateList("colors", index, "image", event.target.value)} /><RemoveButton onClick={() => removeListItem("colors", index)} /></div>)}
+            </DynamicSection>
+
+            <DynamicSection title="Thư viện ảnh" onAdd={addImage} addLabel="Thêm ảnh">
+              {data.images.map((image, index) => <div className="dynamic-row image-row" key={`image-${index}`}><input aria-label={`Ảnh thư viện ${index + 1}`} placeholder="https://... hoặc /products/..." value={image} onChange={(event) => updateImage(index, event.target.value)} />{image && <img className="admin-image-preview" src={image} alt="" />}<RemoveButton onClick={() => removeImage(index)} /></div>)}
+            </DynamicSection>
+
+            <section className="admin-form-section"><h3>Thông số chính</h3><div className="form-grid"><label>Màn hình<input name="screen" value={data.screen} onChange={change} /></label><label>Chip xử lý<input name="chip" value={data.chip} onChange={change} /></label><label>Camera sau<input name="camera" value={data.camera} onChange={change} /></label><label>Camera trước<input name="frontCamera" value={data.frontCamera || ""} onChange={change} /></label></div></section>
+
+            <DynamicSection title="Thông số chi tiết" onAdd={() => addListItem("detailRows", { label: "", value: "" })} addLabel="Thêm thông số">
+              {data.detailRows.map((detail, index) => <div className="dynamic-row detail-row" key={`detail-${index}`}><input aria-label={`Tên thông số ${index + 1}`} placeholder="Ví dụ: Pin" value={detail.label} onChange={(event) => updateList("detailRows", index, "label", event.target.value)} /><input aria-label={`Giá trị thông số ${index + 1}`} placeholder="Ví dụ: 5.000 mAh" value={detail.value} onChange={(event) => updateList("detailRows", index, "value", event.target.value)} /><RemoveButton onClick={() => removeListItem("detailRows", index)} /></div>)}
+            </DynamicSection>
+          </> : <div className="form-grid"><label className="span-2">Tên chi nhánh<input name="name" value={data.name} onChange={change} /></label><label className="span-2">Địa chỉ<input name="address" value={data.address} onChange={change} /></label><label>Giờ mở cửa<input name="hours" value={data.hours} onChange={change} /></label><label>Số điện thoại<input name="phone" value={data.phone} onChange={change} /></label></div>}
           <div className="form-errors">{Object.values(errors).map((item) => <p key={item}>{item}</p>)}</div>
           <button className="primary-button full-button" type="submit">{modal.item?.id ? "Lưu thay đổi" : isProduct ? "Thêm sản phẩm" : "Thêm chi nhánh"}</button>
         </form>
       </div>
     </div>
   );
+}
+
+function DynamicSection({ title, onAdd, addLabel, children }) {
+  return <section className="admin-form-section"><div className="dynamic-heading"><h3>{title}</h3><button className="add-row-button" type="button" onClick={onAdd}>+ {addLabel}</button></div><div className="dynamic-list">{children}</div></section>;
+}
+
+function RemoveButton({ onClick }) {
+  return <button className="remove-row-button" type="button" onClick={onClick} aria-label="Xóa dòng">×</button>;
 }
 
 export default function AdminPage() {
