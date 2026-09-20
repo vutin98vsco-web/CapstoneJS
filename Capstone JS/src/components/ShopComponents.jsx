@@ -95,7 +95,7 @@ export function ProductModal({ product, onClose, onAdd }) {
               <div className="color-options">{product.colors.map((color) => <button className={`color-option ${selectedColor?.name === color.name ? "active" : ""}`} type="button" key={color.name} aria-label={`Chọn màu ${color.name}`} aria-pressed={selectedColor?.name === color.name} onClick={() => selectColor(color)}><span className="color-swatch" style={{ backgroundColor: color.hex }} /><span>{color.name}</span></button>)}</div>
             </div>}
             <p>{product.description}</p>
-            <dl className="spec-list"><div><dt>Màn hình</dt><dd>{product.screen}</dd></div><div><dt>Camera</dt><dd>{product.camera}</dd></div><div><dt>Chip</dt><dd>{product.chip}</dd></div><div><dt>Bộ nhớ</dt><dd>{selectedVariant?.storage || product.storage}</dd></div>{Object.entries(product.details).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+            <dl className="spec-list"><div><dt>Màn hình</dt><dd>{product.screen}</dd></div><div><dt>Camera sau</dt><dd>{product.camera}</dd></div>{product.frontCamera && <div><dt>Camera trước</dt><dd>{product.frontCamera}</dd></div>}<div><dt>Chip</dt><dd>{product.chip}</dd></div><div><dt>Bộ nhớ</dt><dd>{selectedVariant?.storage || product.storage}</dd></div>{Object.entries(product.details).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
             <p className="stock-line">{product.stock === null ? "Sản phẩm đang có sẵn" : `Còn ${product.stock} sản phẩm`}</p>
             <button className="primary-button full-button" type="button" onClick={addConfiguredProduct}>Thêm vào giỏ hàng</button>
           </div>
