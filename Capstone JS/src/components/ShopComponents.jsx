@@ -5,6 +5,13 @@ import { formatCurrency } from "../js/utils/format.js";
 
 export function Header({ cartCount, onCartOpen }) {
   const [menuOpen, setMenuOpen] = useState(false);
+
+  function scrollToSection(event, sectionId) {
+    event.preventDefault();
+    setMenuOpen(false);
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   return (
     <>
       <div className="promo-bar">Miễn phí giao hàng cho đơn từ 2.000.000đ · Thu cũ đổi mới</div>
@@ -12,8 +19,8 @@ export function Header({ cartCount, onCartOpen }) {
         <Brand />
         <button className="menu-button" type="button" aria-label="Mở menu" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>☰</button>
         <nav className={`main-nav ${menuOpen ? "open" : ""}`} aria-label="Điều hướng chính">
-          <a href="#products" onClick={() => setMenuOpen(false)}>Sản phẩm</a>
-          <a href="#stores" onClick={() => setMenuOpen(false)}>Chi nhánh</a>
+          <a href="#products" onClick={(event) => scrollToSection(event, "products")}>Sản phẩm</a>
+          <a href="#stores" onClick={(event) => scrollToSection(event, "stores")}>Chi nhánh</a>
           <Link to="/about">Về chúng tôi</Link>
           <Link to="/login">Quản trị</Link>
         </nav>
