@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import Brand from "../components/Brand.jsx";
 import { Toast } from "../components/ShopComponents.jsx";
@@ -52,9 +52,30 @@ export default function AdminPage() {
   const [sort, setSort] = useState("default");
   const [modal, setModal] = useState(null);
   const [message, setMessage] = useState("");
-  useEffect(() => { document.body.className = "admin-page"; document.title = "Quản trị | TIN STUDIO"; if (loggedIn) load(); return () => { document.body.className = ""; }; }, []);
-  async function load() { try { const [productData, storeData] = await Promise.all([productService.getAll(), storeService.getAll()]); setProducts(productData); setStores(storeData); } catch { notify("Không thể tải dữ liệu."); } }
-  function notify(text) { setMessage(text); window.clearTimeout(notify.timer); notify.timer = window.setTimeout(() => setMessage(""), 2200); }
+  const notifyTimer = useRef(null);
+  const notify = useCallback((text) => {
+    setMessage(text);
+    window.clearTimeout(notifyTimer.current);
+    notifyTimer.current = window.setTimeout(() => setMessage(""), 2200);
+  }, []);
+  const load = useCallback(async () => {
+    try {
+      const [productData, storeData] = await Promise.all([productService.getAll(), storeService.getAll()]);
+      setProducts(productData);
+      setStores(storeData);
+    } catch {
+      notify("Không thể tải dữ liệu.");
+    }
+  }, [notify]);
+  useEffect(() => {
+    document.body.className = "admin-page";
+    document.title = "Quản trị | TIN STUDIO";
+    if (loggedIn) Promise.resolve().then(load);
+    return () => {
+      document.body.className = "";
+      window.clearTimeout(notifyTimer.current);
+    };
+  }, [load, loggedIn]);
   async function removeProduct(id) { if (!window.confirm("Bạn chắc chắn muốn xóa sản phẩm này?")) return; await productService.remove(id); await load(); notify("Đã xóa sản phẩm."); }
   async function removeStore(id) { if (!window.confirm("Bạn chắc chắn muốn xóa chi nhánh này?")) return; await storeService.remove(id); await load(); notify("Đã xóa chi nhánh."); }
   const visibleProducts = useMemo(() => { const result = products.filter((item) => item.name.toLowerCase().includes(search.toLowerCase())); if (sort === "asc") result.sort((a, b) => a.price - b.price); if (sort === "desc") result.sort((a, b) => b.price - a.price); return result; }, [products, search, sort]);
