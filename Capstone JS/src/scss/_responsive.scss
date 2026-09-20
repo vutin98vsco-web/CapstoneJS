@@ -91,5 +91,11 @@
   .table-controls { grid-template-columns: 1fr; }
   .form-grid { grid-template-columns: 1fr; }
   .form-grid .span-2 { grid-column: span 1; }
+  .admin-form-section { padding: 13px; }
+  .dynamic-heading { align-items: flex-start; flex-direction: column; }
+  .variant-row, .detail-row, .color-row, .image-row { grid-template-columns: 1fr 38px; }
+  .variant-row input:nth-child(2), .detail-row input:nth-child(2), .color-row input:nth-child(3), .image-row input:first-child { grid-column: 1 / -1; }
+  .color-row .color-picker, .image-row .admin-image-preview { grid-column: 1; grid-row: 2; }
+  .color-row .remove-row-button, .image-row .remove-row-button { grid-column: 2; grid-row: 2; }
   .auth-card { padding: 28px 20px; }
 }
