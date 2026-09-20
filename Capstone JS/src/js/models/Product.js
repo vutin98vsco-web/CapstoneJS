@@ -50,8 +50,12 @@ export default class Product {
     this.colors = Array.isArray(colors)
       ? colors
         .map((color) => typeof color === "string"
-          ? { name: color.trim(), hex: "#d8d9dc" }
-          : { name: String(color.name || "").trim(), hex: String(color.hex || "#d8d9dc").trim() })
+          ? { name: color.trim(), hex: "#d8d9dc", image: "" }
+          : {
+              name: String(color.name || "").trim(),
+              hex: String(color.hex || "#d8d9dc").trim(),
+              image: String(color.image || "").trim(),
+            })
         .filter((color) => color.name)
       : [];
     this.stock = stock === null || stock === undefined || stock === "" ? null : Number(stock);

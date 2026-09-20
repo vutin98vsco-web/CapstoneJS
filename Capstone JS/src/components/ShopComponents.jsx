@@ -48,17 +48,29 @@ export function ProductCard({ product, onDetail, onAdd }) {
 }
 
 export function ProductModal({ product, onClose, onAdd }) {
-  const [image, setImage] = useState(product?.images?.[0] || "");
+  const [image, setImage] = useState(product?.colors?.[0]?.image || product?.images?.[0] || "");
   const [selectedVariant, setSelectedVariant] = useState(product?.variants?.[0] || null);
   const [selectedColor, setSelectedColor] = useState(product?.colors?.[0] || null);
   if (!product) return null;
 
   const selectedPrice = selectedVariant?.price ?? product.price;
 
+  function selectColor(color) {
+    setSelectedColor(color);
+    if (color.image) setImage(color.image);
+  }
+
+  function selectImage(item) {
+    setImage(item);
+    const matchingColor = product.colors.find((color) => color.image === item);
+    if (matchingColor) setSelectedColor(matchingColor);
+  }
+
   function addConfiguredProduct() {
     onAdd({
       ...product,
       price: selectedPrice,
+      image: selectedColor?.image || image || product.image,
       selectedStorage: selectedVariant?.storage || "",
       selectedColor: selectedColor?.name || "",
     });
@@ -69,7 +81,7 @@ export function ProductModal({ product, onClose, onAdd }) {
       <div className="modal product-modal">
         <button className="close-button" type="button" onClick={onClose} aria-label="Đóng">×</button>
         <div className="product-detail">
-          <div className="detail-gallery"><div className="detail-main-image"><img src={image} alt={product.name} /></div><div className="detail-thumbnails">{product.images.slice(0, 4).map((item, index) => <button className={image === item ? "active" : ""} type="button" key={`${item}-${index}`} onClick={() => setImage(item)}><img src={item} alt={`Góc chụp ${index + 1}`} /></button>)}</div></div>
+          <div className="detail-gallery"><div className="detail-main-image"><img src={image} alt={`${product.name}${selectedColor?.name ? ` màu ${selectedColor.name}` : ""}`} /></div><div className="detail-thumbnails">{product.images.slice(0, 4).map((item, index) => { const imageColor = product.colors.find((color) => color.image === item); return <button className={image === item ? "active" : ""} type="button" key={`${item}-${index}`} aria-label={imageColor ? `Xem ${product.name} màu ${imageColor.name}` : `Xem ảnh ${index + 1}`} onClick={() => selectImage(item)}><img src={item} alt={imageColor ? `${product.name} màu ${imageColor.name}` : `Góc chụp ${index + 1}`} /></button>; })}</div></div>
           <div className="detail-copy">
             <span className="product-category">{product.category}</span>
             <h2 id="productModalTitle">{product.name}</h2>
@@ -80,7 +92,7 @@ export function ProductModal({ product, onClose, onAdd }) {
             </div>}
             {product.colors.length > 0 && <div className="product-options">
               <div className="option-heading"><strong>Chọn màu</strong><span>{selectedColor?.name}</span></div>
-              <div className="color-options">{product.colors.map((color) => <button className={`color-option ${selectedColor?.name === color.name ? "active" : ""}`} type="button" key={color.name} aria-label={`Chọn màu ${color.name}`} aria-pressed={selectedColor?.name === color.name} onClick={() => setSelectedColor(color)}><span className="color-swatch" style={{ backgroundColor: color.hex }} /><span>{color.name}</span></button>)}</div>
+              <div className="color-options">{product.colors.map((color) => <button className={`color-option ${selectedColor?.name === color.name ? "active" : ""}`} type="button" key={color.name} aria-label={`Chọn màu ${color.name}`} aria-pressed={selectedColor?.name === color.name} onClick={() => selectColor(color)}><span className="color-swatch" style={{ backgroundColor: color.hex }} /><span>{color.name}</span></button>)}</div>
             </div>}
             <p>{product.description}</p>
             <dl><div><dt>Màn hình</dt><dd>{product.screen}</dd></div><div><dt>Camera</dt><dd>{product.camera}</dd></div><div><dt>Chip</dt><dd>{product.chip}</dd></div><div><dt>Bộ nhớ</dt><dd>{selectedVariant?.storage || product.storage}</dd></div></dl>
