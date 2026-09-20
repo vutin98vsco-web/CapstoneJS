@@ -41,9 +41,24 @@ th { color: $muted; font-size: .72rem; letter-spacing: .05em; text-transform: up
 .row-actions button { border: 1px solid $line; border-radius: 8px; padding: 6px 9px; background: #fff; font-size: .78rem; font-weight: 750; }
 .row-actions .danger-action { border-color: #ffd3cf; color: $danger; }
 .table-empty { padding: 45px; color: $muted; text-align: center; }
-.admin-modal { width: min(100%, 720px); }
+.admin-modal { width: min(100%, 980px); }
 .admin-modal h2 { margin: 0 50px 25px 0; }
 .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 14px; }
 .form-grid .span-2 { grid-column: span 2; }
 .admin-modal textarea { resize: vertical; }
 .admin-modal .full-button { margin-top: 10px; }
+.admin-form-section { margin-bottom: 22px; border: 1px solid $line; border-radius: 16px; padding: 17px; background: #f9fbfd; }
+.admin-form-section h3 { margin: 0 0 15px; font-size: .98rem; }
+.dynamic-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 13px; }
+.dynamic-heading h3 { margin: 0; }
+.add-row-button { min-height: 36px; border: 1px solid #b9d8ff; border-radius: 9px; padding: 0 11px; background: #eaf4ff; color: $blue; font-size: .76rem; font-weight: 800; }
+.dynamic-list { display: grid; gap: 9px; }
+.dynamic-row { display: grid; align-items: center; gap: 9px; }
+.dynamic-row input { min-height: 42px; }
+.variant-row, .detail-row { grid-template-columns: 1fr 1fr 38px; }
+.color-row { grid-template-columns: .75fr 54px 1.5fr 38px; }
+.image-row { grid-template-columns: 1fr 48px 38px; }
+.admin-modal .color-picker { min-height: 42px; padding: 4px; cursor: pointer; }
+.admin-image-preview { width: 46px; height: 46px; border: 1px solid $line; border-radius: 9px; padding: 3px; background: #fff; object-fit: contain; }
+.remove-row-button { width: 38px; height: 38px; border: 1px solid #ffd3cf; border-radius: 9px; background: #fff1f0; color: $danger; font-size: 1.2rem; }
+.dynamic-list:empty::after { color: $muted; content: "Chưa có dữ liệu. Nhấn nút thêm để tạo mới."; font-size: .8rem; }
