@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import Brand from "./Brand.jsx";
 import { formatCurrency } from "../js/utils/format.js";
@@ -51,13 +51,6 @@ export function ProductModal({ product, onClose, onAdd }) {
   const [image, setImage] = useState(product?.images?.[0] || "");
   const [selectedVariant, setSelectedVariant] = useState(product?.variants?.[0] || null);
   const [selectedColor, setSelectedColor] = useState(product?.colors?.[0] || null);
-
-  useEffect(() => {
-    setImage(product?.images?.[0] || "");
-    setSelectedVariant(product?.variants?.[0] || null);
-    setSelectedColor(product?.colors?.[0] || null);
-  }, [product]);
-
   if (!product) return null;
 
   const selectedPrice = selectedVariant?.price ?? product.price;

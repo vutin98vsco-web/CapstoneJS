@@ -43,7 +43,7 @@ export default function StorePage() {
         <section className="stores-section" id="stores"><div className="section-heading"><div><p className="eyebrow">Đến trải nghiệm</p><h2>Chi nhánh TIN STUDIO</h2></div></div><div className="store-grid">{stores.map((store, index) => <article className="store-card" key={store.id}><span className="store-number">0{index + 1}</span><h3>{store.name}</h3><p>{store.address}</p><div><span>{store.hours}</span><a href={`tel:${store.phone.replace(/\s/g, "")}`}>{store.phone}</a></div></article>)}</div></section>
       </main>
       <footer><Brand className="footer-brand" /><p>Điện thoại chính hãng · Giao nhanh tại TP.HCM</p><p>© 2026 TIN STUDIO</p></footer>
-      <ProductModal product={selectedProduct} onClose={() => setSelectedProduct(null)} onAdd={addToCart} />
+      {selectedProduct && <ProductModal key={selectedProduct.id} product={selectedProduct} onClose={() => setSelectedProduct(null)} onAdd={addToCart} />}
       {cartOpen && <CartDrawer cart={cart} onClose={() => setCartOpen(false)} onUpdate={(id, change) => setCart(cartService.update(id, change))} onRemove={(id) => setCart(cartService.remove(id))} onCheckout={checkout} />}
       <Toast message={message} />
     </>
