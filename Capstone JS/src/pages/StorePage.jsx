@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Brand from "../components/Brand.jsx";
 import { CartDrawer, Header, ProductCard, ProductModal, Toast } from "../components/ShopComponents.jsx";
 import { productService } from "../js/services/productService.js";
@@ -14,15 +14,22 @@ export default function StorePage() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [message, setMessage] = useState("");
+  const notifyTimer = useRef(null);
+
+  const notify = useCallback((text) => {
+    setMessage(text);
+    window.clearTimeout(notifyTimer.current);
+    notifyTimer.current = window.setTimeout(() => setMessage(""), 2200);
+  }, []);
 
   useEffect(() => {
     document.body.className = "";
     document.title = "TIN STUDIO | Cửa hàng điện thoại";
     Promise.all([productService.getAll(), storeService.getAll()]).then(([productData, storeData]) => { setProducts(productData); setStores(storeData); }).catch(() => notify("Không thể tải dữ liệu. Vui lòng thử lại."));
-  }, []);
+    return () => window.clearTimeout(notifyTimer.current);
+  }, [notify]);
   useEffect(() => { document.body.classList.toggle("no-scroll", Boolean(selectedProduct || cartOpen)); return () => document.body.classList.remove("no-scroll"); }, [selectedProduct, cartOpen]);
 
-  function notify(text) { setMessage(text); window.clearTimeout(notify.timer); notify.timer = window.setTimeout(() => setMessage(""), 2200); }
   function addToCart(product) { setCart(cartService.add(product)); notify("Đã thêm sản phẩm vào giỏ hàng."); }
   function checkout() { if (!cart.length) return notify("Giỏ hàng của bạn đang trống."); setCart(cartService.clear()); setCartOpen(false); notify("Thanh toán thành công. Cảm ơn bạn!"); }
 
