@@ -40,7 +40,8 @@ export default class Product {
     this.images = Array.isArray(images) && images.length ? images : [this.image];
     this.description = String(description || desc || "Đang cập nhật").trim();
     this.screen = String(screen || "Đang cập nhật").trim();
-    this.camera = String(camera || [backCamera, frontCamera].filter(Boolean).join(" · ") || "Đang cập nhật").trim();
+    this.camera = String(camera || backCamera || "Đang cập nhật").trim();
+    this.frontCamera = String(frontCamera || "").trim();
     this.chip = String(chip || "Đang cập nhật").trim();
     this.storage = String(storage || "Đang cập nhật").trim();
     this.variants = Array.isArray(variants)
