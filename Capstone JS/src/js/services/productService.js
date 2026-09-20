@@ -20,6 +20,7 @@ function toApiProduct(payload) {
     storage: payload.storage,
     variants: payload.variants || [],
     colors: payload.colors || [],
+    details: payload.details || {},
     stock: Number(payload.stock || 0),
     badge: payload.badge || "",
   };

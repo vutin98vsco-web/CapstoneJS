@@ -21,7 +21,7 @@ function AdminForm({ modal, onClose, onSaved }) {
     if (Object.keys(validation).length) return setErrors(validation);
     try {
       if (isProduct) {
-        const payload = { ...data, price: Number(data.price), oldPrice: Number(data.oldPrice || 0), stock: Number(data.stock), images: [data.image] };
+        const payload = { ...data, price: Number(data.price), oldPrice: Number(data.oldPrice || 0), stock: Number(data.stock), images: data.images?.length ? data.images : [data.image], variants: data.variants || [], colors: data.colors || [], details: data.details || {} };
         if (modal.item?.id) await productService.update(modal.item.id, payload); else await productService.create(payload);
       } else if (modal.item?.id) await storeService.update(modal.item.id, data); else await storeService.create(data);
       onSaved();

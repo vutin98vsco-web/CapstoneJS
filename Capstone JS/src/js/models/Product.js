@@ -19,6 +19,7 @@ export default class Product {
     storage = "Đang cập nhật",
     variants = [],
     colors = [],
+    details = {},
     stock = null,
     badge = "",
   }) {
@@ -58,6 +59,7 @@ export default class Product {
             })
         .filter((color) => color.name)
       : [];
+    this.details = details && typeof details === "object" && !Array.isArray(details) ? details : {};
     this.stock = stock === null || stock === undefined || stock === "" ? null : Number(stock);
     this.badge = String(badge).trim();
   }
