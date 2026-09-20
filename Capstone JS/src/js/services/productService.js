@@ -18,6 +18,8 @@ function toApiProduct(payload) {
     images: payload.images || [payload.image],
     chip: payload.chip,
     storage: payload.storage,
+    variants: payload.variants || [],
+    colors: payload.colors || [],
     stock: Number(payload.stock || 0),
     badge: payload.badge || "",
   };
